@@ -2,13 +2,13 @@ const http = require("http");
 const fs = require("fs");
 const url = require("url");
 
-function createServer(configFilePath) {
+const createServer = (configFilePath) => {
   const config = require(configFilePath);
 
-  const hostname = config.hostname || "127.0.0.1";
+  const hostname = config.hostname || "localhost";
   const port = config.port || 3000;
   const endpoints = config.endpoints || [];
-  // Function to handle GET requests
+
   const handleGet = (req, res, file) => {
     fs.readFile(file, "utf8", (err, data) => {
       if (err) {
@@ -22,7 +22,6 @@ function createServer(configFilePath) {
     });
   };
 
-  // Function to handle POST requests
   const handlePost = (req, res, file) => {
     let newItem = "";
 
@@ -54,7 +53,6 @@ function createServer(configFilePath) {
     });
   };
 
-  // Function to handle DELETE requests
   const handleDelete = (req, res, file, id) => {
     fs.readFile(file, "utf8", (err, data) => {
       if (err) {
@@ -84,7 +82,6 @@ function createServer(configFilePath) {
     const query = reqUrl.query;
     const method = req.method;
 
-    // Find the endpoint configuration for the requested path
     const endpoint = endpoints.find((ep) => ep.path === path);
 
     if (!endpoint) {
@@ -115,6 +112,6 @@ function createServer(configFilePath) {
   server.listen(port, hostname, () => {
     console.log(`Server running at http://${hostname}:${port}/`);
   });
-}
+};
 
 module.exports = createServer;
