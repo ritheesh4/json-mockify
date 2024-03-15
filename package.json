@@ -1,5 +1,5 @@
 {
-  "name": "json-host",
+  "name": "json-mockify",
   "version": "0.0.1",
   "description": "A simple CRUD HTTP server for JSON files",
   "main": "index.js",
