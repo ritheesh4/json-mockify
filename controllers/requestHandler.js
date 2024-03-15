@@ -14,8 +14,23 @@ const handleGet = (req, res, data) => {
   res.end(JSON.stringify(data));
 };
 
+/**
+ * Handles incoming HTTP requests and routes them to appropriate handlers based on the request method and path.
+ * @param {http.IncomingMessage} req - The HTTP request object.
+ * @param {http.ServerResponse} res - The HTTP response object.
+ * @param {object} config - The server configuration object.
+ * @param {string} config.dbFilePath - The file path to the JSON database.
+ */
 const handleRequest = (req, res, config) => {
+  /**
+   * Parses the request URL and extracts the path and method.
+   * @type {object}
+   * @property {string} pathname - The path of the request URL.
+   * @property {string} method - The HTTP request method (GET, POST, DELETE, etc.).
+   */
   const reqUrl = url.parse(req.url, true);
+
+  // Extract path and method from the parsed URL
   const path = reqUrl.pathname;
   const method = req.method;
 
@@ -39,6 +54,7 @@ const handleRequest = (req, res, config) => {
     return;
   }
 
+  // Route the request based on the HTTP method
   switch (method) {
     case "GET":
       handleGet(req, res, requestData);
@@ -50,6 +66,7 @@ const handleRequest = (req, res, config) => {
       // Handle DELETE request
       break;
     default:
+      // If the method is not allowed, send a 405 Method Not Allowed response
       res.statusCode = 405;
       res.end("Method Not Allowed");
   }
