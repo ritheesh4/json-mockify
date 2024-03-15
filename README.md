@@ -1,5 +1,5 @@
 
-#json-host
+# json-host
 
 json-host is a lightweight Node.js server that serves JSON data from files, allowing for easy mocking of API responses during development and testing. It can be used as a standalone server or integrated into your existing Node.js projects.
 
@@ -14,7 +14,7 @@ Installation
 Clone the repository:
 bash
 Copy code
-git clone https://github.com/your-username/json-mock-server.git
+git clone https://github.com/ritheesh4/json-host.git
 Install dependencies:
 bash
 Copy code
