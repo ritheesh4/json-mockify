@@ -1,7 +1,7 @@
 
 # json-mockify
 
-json-host is a lightweight Node.js server that serves JSON data from files, allowing for easy mocking of API responses during development and testing. It can be used as a standalone server or integrated into your existing Node.js projects.
+json-mockify is a lightweight Node.js server that serves JSON data from files, allowing for easy mocking of API responses during development and testing. It can be used as a standalone server or integrated into your existing Node.js projects.
 
 ------------
 
@@ -21,7 +21,7 @@ json-host is a lightweight Node.js server that serves JSON data from files, allo
 #### **Installation**
 
 Clone the repository:
-> git clone https://github.com/ritheesh4/json-host.git
+> git clone https://github.com/ritheesh4/json-mockify.git
 
 Install dependencies:
 > npm install
@@ -76,4 +76,4 @@ Contributions are welcome! If you have suggestions, feature requests, or bug rep
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-Feel free to customize this README template to fit the specific details and usage of your json-host repository.
+Feel free to customize this README template to fit the specific details and usage of your json-mockify repository.
