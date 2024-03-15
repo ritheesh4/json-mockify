@@ -1,4 +1,3 @@
-
 # json-mockify
 
 json-mockify is a lightweight Node.js server that serves JSON data from files, allowing for easy mocking of API responses during development and testing. It can be used as a standalone server or integrated into your existing Node.js projects.
@@ -52,20 +51,21 @@ Example config.json:
     "dbFilePath": "./db.json"
   }
   
-  We have to create server.js file and need to add this configuration.
-> //config.js
+We have to create server.js file and need to add this configuration.
+```  
+//config.js
 const path = require('path');
 const createServer = require('json-mockify');
 
-> // Provide the name of the custom configuration file
+// Provide the name of the custom configuration file
 const customConfigFilename = 'defaultConfig.json';
 
-> // Resolve the absolute path to the custom configuration file
+// Resolve the absolute path to the custom configuration file
 const customConfigPath = path.resolve(__dirname, customConfigFilename);
 
-> // Create server with custom configuration
+// Create server with custom configuration
 createServer(customConfigPath);
-
+```
 Once the above file created, you can directly run the file using command below.
 > node config.js 
 
