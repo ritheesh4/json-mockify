@@ -1,5 +1,5 @@
 
-# json-host
+# json-mockify
 
 json-host is a lightweight Node.js server that serves JSON data from files, allowing for easy mocking of API responses during development and testing. It can be used as a standalone server or integrated into your existing Node.js projects.
 
