@@ -1,8 +1,3 @@
-/**
- * Module for creating an HTTP server based on the provided configuration.
- * @module server
- */
-
 const http = require("http");
 const { handleRequest } = require("./requestHandler");
 
@@ -25,6 +20,19 @@ const createServer = (configFilePath) => {
    * @param {ServerConfig} config - The server configuration.
    */
   const serverRequestHandler = (req, res) => {
+    // Set CORS headers to allow all origins
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "*");
+
+    // Check if it's a preflight request (OPTIONS) and respond with 200 OK
+    if (req.method === "OPTIONS") {
+      res.writeHead(200);
+      res.end();
+      return;
+    }
+
+    // Handle the request
     handleRequest(req, res, config);
   };
 
