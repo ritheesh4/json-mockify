@@ -106,7 +106,6 @@ const handlePost = (req, res, data, config) => {
   });
 };
 
-
 const handleDelete = (req, res, data, config) => {
   // Parse the request URL to extract the path
   const reqUrl = url.parse(req.url, true);
@@ -170,9 +169,37 @@ const handleRequest = (req, res, config) => {
   // Find the corresponding data based on the request path
   const requestData = findDataByPath(dbData, path);
 
-  if (!requestData) {
-    res.statusCode = 404;
-    res.end("Not Found");
+  // Extracting query parameters
+  const queryParameters = reqUrl.query;
+
+  // If there are query parameters
+  if (Object.keys(queryParameters).length > 0) {
+    let matchedData = [];
+
+    if (Array.isArray(requestData)) {
+      // If dbData is an array, filter it directly
+      matchedData = requestData?.filter((item) => {
+        // Iterate through each query parameter and check if item matches
+        return Object.keys(queryParameters).every(
+          (parameter) => item[parameter] == queryParameters[parameter]
+        );
+      });
+    } else if (typeof requestData === "object") {
+      // If requestData is an object, iterate over its keys and filter accordingly
+      matchedData = Object.values(requestData).filter((item) => {
+        // Iterate through each query parameter and check if item matches
+        return Object.keys(queryParameters).every(
+          (parameter) => item[parameter] === queryParameters[parameter]
+        );
+      });
+    }
+
+    if (matchedData.length > 0) {
+      handleGet(req, res, matchedData); // Assuming handleGet can handle arrays
+    } else {
+      res.statusCode = 404;
+      res.end("Data not found.");
+    }
     return;
   }
 

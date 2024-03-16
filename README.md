@@ -92,5 +92,3 @@ Contributions are welcome! If you have suggestions, feature requests, or bug rep
 **License**
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-Feel free to customize this README template to fit the specific details and usage of your json-mockify repository.
