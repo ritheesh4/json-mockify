@@ -77,6 +77,8 @@ Once the above file created, you can directly run the file using command below.
 - GET /path/to/resource: Retrieve data from the specified path.
 - POST /path/to/resource: Create a new resource.
 - DELETE /path/to/resource/: Delete a resource by ID.
+- Query based GET requests
+- Query based POST requests
 
 **Examples:**
 To retrieve data from a JSON file named data/db.json, make a GET request to /. For example:
