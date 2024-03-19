@@ -77,6 +77,8 @@ Once the above file created, you can directly run the file using command below.
 - GET /path/to/resource: Retrieve data from the specified path.
 - POST /path/to/resource: Create a new resource.
 - DELETE /path/to/resource/: Delete a resource by ID.
+- Query based GET requests
+- Query based POST requests
 
 **Examples:**
 To retrieve data from a JSON file named data/db.json, make a GET request to /. For example:
@@ -92,5 +94,3 @@ Contributions are welcome! If you have suggestions, feature requests, or bug rep
 **License**
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-Feel free to customize this README template to fit the specific details and usage of your json-mockify repository.

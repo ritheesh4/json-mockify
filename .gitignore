@@ -2,3 +2,4 @@ node_modules
 dist
 db.json
 defaultConfig.json
+server.js
