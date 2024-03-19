@@ -5,6 +5,9 @@ const {
   findDataByPath,
   saveJsonData,
   deleteDataByPath,
+  findDataByPathAndQuery,
+  replaceObjectInNestedArray,
+  arrayOfPaths
 } = require("./utils");
 
 /**
@@ -14,7 +17,7 @@ const {
  * @param {Object} data - The JSON data to be sent in the response.
  * @returns {void}
  */
-const handleGet = (req, res, data) => {
+const handleGet = (req, res, dbData, queryParameters) => {
   /**
    * Represents the HTTP status code of the response.
    * @type {number}
@@ -27,7 +30,12 @@ const handleGet = (req, res, data) => {
    */
   let contentType;
 
-  if (!data) {
+  const reqUrl = url.parse(req.url, true);
+  const path = reqUrl.pathname;
+
+  let requestData = findDataByPathAndQuery(dbData, path, queryParameters);
+
+  if (!requestData) {
     statusCode = 404;
     contentType = "text/plain";
     res.statusCode = statusCode;
@@ -40,7 +48,7 @@ const handleGet = (req, res, data) => {
   contentType = "application/json";
   res.statusCode = statusCode;
   res.setHeader("Content-Type", contentType);
-  res.end(JSON.stringify(data));
+  res.end(JSON.stringify(requestData));
 };
 
 /**
@@ -70,29 +78,22 @@ const handlePost = (req, res, data, config) => {
       // Parse the request body as JSON
       const postData = JSON.parse(requestBody);
 
-      // Parse the request URL to extract the path
+      // Parse the request URL to extract the path and query parameters
       const reqUrl = url.parse(req.url, true);
       const path = reqUrl.pathname;
 
+      const queryParameters = reqUrl.query;
+
       // Load the JSON data from db.json
       const dbData = loadJsonData(config.dbFilePath);
+      const pathsAsArray = arrayOfPaths(path);
 
-      // Find the corresponding data based on the request path
-      let requestData = findDataByPath(dbData, path);
+      // let dbDataOfPath = findDataByPathAndQuery(dbData, path);
 
-      // If requestData is falsy, meaning the data doesn't exist, add the postData to the database
-      if (!requestData) {
-        // Create new data entry with the postData
-        requestData = postData;
-        // Add the new data to the database
-        dbData[path] = requestData;
-      } else {
-        // Update the existing data with the new values from the request body
-        Object.assign(requestData, postData);
-      }
+      const updatedDbData = replaceObjectInNestedArray(dbData, pathsAsArray, queryParameters, postData);
 
       // Save the updated data back to the JSON file
-      saveJsonData(config.dbFilePath, dbData);
+      saveJsonData(config.dbFilePath, updatedDbData);
 
       // Respond with updated data
       res.statusCode = 200;
@@ -105,7 +106,6 @@ const handlePost = (req, res, data, config) => {
     }
   });
 };
-
 
 const handleDelete = (req, res, data, config) => {
   // Parse the request URL to extract the path
@@ -164,28 +164,23 @@ const handleRequest = (req, res, config) => {
     return;
   }
 
+  // Extracting query parameters
+  const queryParameters = reqUrl.query;
   // Load the JSON data from db.json
   const dbData = loadJsonData(config.dbFilePath);
 
-  // Find the corresponding data based on the request path
-  const requestData = findDataByPath(dbData, path);
-
-  if (!requestData) {
-    res.statusCode = 404;
-    res.end("Not Found");
-    return;
-  }
+  let matchedData;
 
   // Route the request based on the HTTP method
   switch (method) {
     case "GET":
-      handleGet(req, res, requestData);
+      handleGet(req, res, dbData, queryParameters);
       break;
     case "POST":
-      handlePost(req, res, requestData, config);
+      handlePost(req, res, matchedData, config);
       break;
     case "DELETE":
-      handleDelete(req, res, requestData, config);
+      handleDelete(req, res, matchedData, config), query;
       break;
     default:
       // If the method is not allowed, send a 405 Method Not Allowed response
