@@ -12,13 +12,13 @@ const fs = require("fs");
  */
 const loadJsonData = (filePath) => {
   try {
-    const jsonData = fs.readFileSync(filePath, 'utf8');
+    const jsonData = fs.readFileSync(filePath, "utf8");
     if (!jsonData) {
-      throw new Error('File is empty');
+      throw new Error("File is empty");
     }
     return JSON.parse(jsonData);
   } catch (error) {
-    console.error('Error loading JSON data:', error);
+    console.error("Error loading JSON data:", error);
     return null;
   }
 };
@@ -30,7 +30,7 @@ const loadJsonData = (filePath) => {
  * @returns {*} The data found at the specified path, or null if not found.
  */
 const findDataByPath = (data, path) => {
-  const pathParts = path.split("/").filter(part => part !== "");
+  const pathParts = path.split("/").filter((part) => part !== "");
   let currentData = data;
   for (const part of pathParts) {
     if (!currentData || typeof currentData !== "object") {
@@ -61,7 +61,7 @@ const saveJsonData = (filePath, data, callback) => {
    * @returns {void}
    */
   const writeFileCallback = (err) => {
-    if (typeof callback === 'function') {
+    if (typeof callback === "function") {
       callback(err);
     }
   };
@@ -80,7 +80,7 @@ const deleteDataByPath = (data, path) => {
    * Array containing individual parts of the path.
    * @type {string[]}
    */
-  const pathParts = path.split('/').filter(part => part !== '');
+  const pathParts = path.split("/").filter((part) => part !== "");
 
   /**
    * Current data being traversed in the nested object.
@@ -90,13 +90,13 @@ const deleteDataByPath = (data, path) => {
 
   // Traverse through the data structure based on the path
   for (let i = 0; i < pathParts.length - 1; i++) {
-      const part = pathParts[i];
-      if (currentData.hasOwnProperty(part)) {
-          currentData = currentData[part];
-      } else {
-          // If any part of the path does not exist in the data structure, return
-          return;
-      }
+    const part = pathParts[i];
+    if (currentData.hasOwnProperty(part)) {
+      currentData = currentData[part];
+    } else {
+      // If any part of the path does not exist in the data structure, return
+      return;
+    }
   }
 
   /**
@@ -109,7 +109,45 @@ const deleteDataByPath = (data, path) => {
   delete currentData[keyToDelete];
 };
 
+/**
+ * Finds data by path and query parameters in JSON data.
+ * @param {Object} data - The JSON data to search within.
+ * @param {string} path - The path to locate the data.
+ * @param {Object} queryParameters - The query parameters to filter the data.
+ * @returns {Object|null} - The found data or null if not found.
+ */
+const findDataByPathAndQuery = (data, path, queryParameters) => {
+  /**
+   * Represents the found data based on the path.
+   * @type {Object|null}
+   */
+  let requestData = findDataByPath(data, path);
 
+  // If requestData is falsy, meaning the data doesn't exist, return null
+  if (!requestData) {
+    return null;
+  }
 
+  // Filter data based on query parameters
+  const keys = Object.keys(queryParameters);
+  if (keys?.length > 0) {
+    requestData = requestData?.filter((item) => {
+      for (const key of keys) {
+        if (item[key] == queryParameters[key]) {
+          return true;
+        }
+      }
+      return false;
+    });
+    return requestData;
+  }
+  return requestData
+};
 
-module.exports = { loadJsonData, findDataByPath, saveJsonData, deleteDataByPath };
+module.exports = {
+  loadJsonData,
+  findDataByPath,
+  saveJsonData,
+  deleteDataByPath,
+  findDataByPathAndQuery,
+};

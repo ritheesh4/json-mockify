@@ -5,6 +5,7 @@ const {
   findDataByPath,
   saveJsonData,
   deleteDataByPath,
+  findDataByPathAndQuery,
 } = require("./utils");
 
 /**
@@ -14,7 +15,7 @@ const {
  * @param {Object} data - The JSON data to be sent in the response.
  * @returns {void}
  */
-const handleGet = (req, res, data) => {
+const handleGet = (req, res, dbData, queryParameters) => {
   /**
    * Represents the HTTP status code of the response.
    * @type {number}
@@ -27,7 +28,12 @@ const handleGet = (req, res, data) => {
    */
   let contentType;
 
-  if (!data) {
+  const reqUrl = url.parse(req.url, true);
+  const path = reqUrl.pathname;
+
+  let requestData = findDataByPathAndQuery(dbData, path, queryParameters);
+
+  if (!requestData) {
     statusCode = 404;
     contentType = "text/plain";
     res.statusCode = statusCode;
@@ -40,7 +46,7 @@ const handleGet = (req, res, data) => {
   contentType = "application/json";
   res.statusCode = statusCode;
   res.setHeader("Content-Type", contentType);
-  res.end(JSON.stringify(data));
+  res.end(JSON.stringify(requestData));
 };
 
 /**
@@ -70,35 +76,43 @@ const handlePost = (req, res, data, config) => {
       // Parse the request body as JSON
       const postData = JSON.parse(requestBody);
 
-      // Parse the request URL to extract the path
+      // Parse the request URL to extract the path and query parameters
       const reqUrl = url.parse(req.url, true);
       const path = reqUrl.pathname;
+      const queryParameters = reqUrl.query;
 
       // Load the JSON data from db.json
       const dbData = loadJsonData(config.dbFilePath);
 
-      // Find the corresponding data based on the request path
-      let requestData = findDataByPath(dbData, path);
+      // Find the corresponding data based on the request path and query parameters
+      let requestData = findDataByPathAndQuery(dbData, path, queryParameters);
 
       // If requestData is falsy, meaning the data doesn't exist, add the postData to the database
-      if (!requestData) {
-        // Create new data entry with the postData
-        requestData = postData;
-        // Add the new data to the database
-        dbData[path] = requestData;
-      } else {
-        // Update the existing data with the new values from the request body
-        Object.assign(requestData, postData);
+      if (!requestData && !postData) {
+        // If there's no data at the requested path with given query parameters, return 404
+        res.statusCode = 404;
+        res.end("Data not found.");
+        return;
       }
 
+      // Replace the existing data with the new values from the request body
+      const finalData = [
+        ...(requestData ?? requestData),
+        ...(postData ?? postData),
+      ];
+      // Update the existing data with the new values from the request body
+
+      Object.assign(requestData, finalData);
+
       // Save the updated data back to the JSON file
-      saveJsonData(config.dbFilePath, dbData);
+      saveJsonData(config.dbFilePath, requestData);
 
       // Respond with updated data
       res.statusCode = 200;
       res.setHeader("Content-Type", "application/json");
       res.end(JSON.stringify(dbData));
     } catch (error) {
+      console.log("error_____error___", error);
       // If there's an error parsing the request body or updating the data, send a 400 Bad Request response
       res.statusCode = 400;
       res.end("Bad Request");
@@ -163,56 +177,23 @@ const handleRequest = (req, res, config) => {
     return;
   }
 
+  // Extracting query parameters
+  const queryParameters = reqUrl.query;
   // Load the JSON data from db.json
   const dbData = loadJsonData(config.dbFilePath);
 
-  // Find the corresponding data based on the request path
-  const requestData = findDataByPath(dbData, path);
-
-  // Extracting query parameters
-  const queryParameters = reqUrl.query;
-
-  // If there are query parameters
-  if (Object.keys(queryParameters).length > 0) {
-    let matchedData = [];
-
-    if (Array.isArray(requestData)) {
-      // If dbData is an array, filter it directly
-      matchedData = requestData?.filter((item) => {
-        // Iterate through each query parameter and check if item matches
-        return Object.keys(queryParameters).every(
-          (parameter) => item[parameter] == queryParameters[parameter]
-        );
-      });
-    } else if (typeof requestData === "object") {
-      // If requestData is an object, iterate over its keys and filter accordingly
-      matchedData = Object.values(requestData).filter((item) => {
-        // Iterate through each query parameter and check if item matches
-        return Object.keys(queryParameters).every(
-          (parameter) => item[parameter] === queryParameters[parameter]
-        );
-      });
-    }
-
-    if (matchedData.length > 0) {
-      handleGet(req, res, matchedData); // Assuming handleGet can handle arrays
-    } else {
-      res.statusCode = 404;
-      res.end("Data not found.");
-    }
-    return;
-  }
+  let matchedData;
 
   // Route the request based on the HTTP method
   switch (method) {
     case "GET":
-      handleGet(req, res, requestData);
+      handleGet(req, res, dbData, queryParameters);
       break;
     case "POST":
-      handlePost(req, res, requestData, config);
+      handlePost(req, res, matchedData, config);
       break;
     case "DELETE":
-      handleDelete(req, res, requestData, config);
+      handleDelete(req, res, matchedData, config), query;
       break;
     default:
       // If the method is not allowed, send a 405 Method Not Allowed response
