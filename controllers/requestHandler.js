@@ -6,6 +6,8 @@ const {
   saveJsonData,
   deleteDataByPath,
   findDataByPathAndQuery,
+  replaceObjectInNestedArray,
+  arrayOfPaths
 } = require("./utils");
 
 /**
@@ -79,40 +81,25 @@ const handlePost = (req, res, data, config) => {
       // Parse the request URL to extract the path and query parameters
       const reqUrl = url.parse(req.url, true);
       const path = reqUrl.pathname;
+
       const queryParameters = reqUrl.query;
 
       // Load the JSON data from db.json
       const dbData = loadJsonData(config.dbFilePath);
+      const pathsAsArray = arrayOfPaths(path);
 
-      // Find the corresponding data based on the request path and query parameters
-      let requestData = findDataByPathAndQuery(dbData, path, queryParameters);
+      // let dbDataOfPath = findDataByPathAndQuery(dbData, path);
 
-      // If requestData is falsy, meaning the data doesn't exist, add the postData to the database
-      if (!requestData && !postData) {
-        // If there's no data at the requested path with given query parameters, return 404
-        res.statusCode = 404;
-        res.end("Data not found.");
-        return;
-      }
-
-      // Replace the existing data with the new values from the request body
-      const finalData = [
-        ...(requestData ?? requestData),
-        ...(postData ?? postData),
-      ];
-      // Update the existing data with the new values from the request body
-
-      Object.assign(requestData, finalData);
+      const updatedDbData = replaceObjectInNestedArray(dbData, pathsAsArray, queryParameters, postData);
 
       // Save the updated data back to the JSON file
-      saveJsonData(config.dbFilePath, requestData);
+      saveJsonData(config.dbFilePath, updatedDbData);
 
       // Respond with updated data
       res.statusCode = 200;
       res.setHeader("Content-Type", "application/json");
       res.end(JSON.stringify(dbData));
     } catch (error) {
-      console.log("error_____error___", error);
       // If there's an error parsing the request body or updating the data, send a 400 Bad Request response
       res.statusCode = 400;
       res.end("Bad Request");

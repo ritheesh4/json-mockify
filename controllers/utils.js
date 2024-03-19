@@ -144,10 +144,100 @@ const findDataByPathAndQuery = (data, path, queryParameters) => {
   return requestData
 };
 
+
+// Custom matching function based on query parameters
+const matchByQueryParams = (item, queryParams) => {
+  for (let key in queryParams) {
+    if (item[key] !== queryParams[key]) {
+      return false;
+    }
+  }
+  return true;
+};
+
+/**
+ * Replaces or appends an object in an array within a JSON structure based on the query parameters.
+ * If no query parameters are provided, appends the new object to the main JSON structure.
+ * @param {Object} jsonObject - The JSON object containing the nested arrays.
+ * @param {Array<string>} arrayKeys - The array representing the path to the nested array within the JSON structure.
+ * @param {Object} queryParams - The query parameters used for matching.
+ * @param {Object} newObject - The new object to replace or append.
+ * @returns {Object} The updated JSON object after the replacement or addition.
+ */
+const replaceObjectInNestedArray = (jsonObject, arrayKeys, queryParams, newObject) => {
+  // Helper function to traverse the JSON object recursively and find the target array
+  const findTargetArray = (obj, keys) => {
+    if (keys.length === 0) {
+      return obj;
+    }
+    const currentKey = keys[0];
+    const remainingKeys = keys.slice(1);
+    if (!obj || typeof obj !== 'object' || !obj.hasOwnProperty(currentKey)) {
+      return null;
+    }
+    return findTargetArray(obj[currentKey], remainingKeys);
+  };
+
+  // If no query parameters are provided, append the new object to the main JSON structure
+  if (Object.keys(queryParams).length === 0) {
+    let currentObj = jsonObject;
+    // Traverse the arrayKeys except the last one to find the parent object
+    for (let i = 0; i < arrayKeys.length - 1; i++) {
+      const currentKey = arrayKeys[i];
+      if (!currentObj[currentKey]) {
+        currentObj[currentKey] = {}; // Create an object if it doesn't exist
+      }
+      currentObj = currentObj[currentKey];
+    }
+    // Check if the last key is an array or object and append newObject accordingly
+    if (Array.isArray(currentObj[arrayKeys[arrayKeys.length - 1]])) {
+      currentObj[arrayKeys[arrayKeys.length - 1]].push(newObject);
+    } else {
+      currentObj[arrayKeys[arrayKeys.length - 1]] = newObject;
+    }
+    return jsonObject; // Return the updated JSON object
+  }
+
+  // Find the target array using arrayKeys
+  const targetArray = findTargetArray(jsonObject, arrayKeys);
+  if (!targetArray || !Array.isArray(targetArray)) {
+    return jsonObject; // Return the original object if the target array is not found or is not an array
+  }
+
+  // Find the index of the object to replace based on queryParams
+  const index = targetArray.findIndex(item => {
+    for (let key in queryParams) {
+      if (item[key] !== queryParams[key]) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  if (index === -1) {
+    // If the object matching query parameters does not exist, append the new object to the array
+    targetArray.push(newObject);
+  } else {
+    // Replace the old object with the new one
+    targetArray[index] = newObject;
+  }
+
+  return jsonObject; // Return the updated JSON object
+};
+
+/**
+ * Splits a path string by "/" and filters out empty parts.
+ * @param {string} path - The path string to split.
+ * @returns {Array<string>} An array containing non-empty parts of the path.
+ */
+const arrayOfPaths = (path) => path.split("/").filter((part) => part !== "");
+
 module.exports = {
   loadJsonData,
   findDataByPath,
   saveJsonData,
   deleteDataByPath,
   findDataByPathAndQuery,
+  replaceObjectInNestedArray,
+  arrayOfPaths
 };
