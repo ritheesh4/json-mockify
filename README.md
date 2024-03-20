@@ -1,5 +1,7 @@
 # json-mockify
 
+<a href="https://www.buymeacoffee.com/ritheesh4" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/yellow_img.png" alt="Buy Me A Coffee"></a>
+
 json-mockify is a lightweight Node.js server that serves JSON data from files, allowing for easy mocking of API responses during development and testing. It can be used as a standalone server or integrated into your existing Node.js frontend or backend projects.
 
 ------------
@@ -30,8 +32,9 @@ Install dependencies:
 
 #### **Usage**
 
-1. Define your JSON data files in the data directory.
+1. Define your JSON data files in the data directory(db.json or any file name).
 2. Configure your server settings in the config.json file.
+3. Create the mock server file(mock-server.js or any file name).
 3. Start the server:
 > npm start
 
@@ -50,6 +53,7 @@ Example config.json:
     "port": 3000,
     "dbFilePath": "./db.json"
   }
+- Make sure that db path should be in the level of library. If you are creating a folder for this mock api, make user the db path as nested.
   
 We have to create server.js file and need to add this configuration.
 ```  

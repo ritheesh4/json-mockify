@@ -3,3 +3,4 @@ dist
 db.json
 defaultConfig.json
 server.js
+.github
