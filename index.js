@@ -1,4 +1,4 @@
 // index.js
-const { createServer } = require('./controllers/server');
+const { createServer } = require('./controllers/index');
 
 module.exports = createServer;
