@@ -7,7 +7,8 @@ const {
   deleteDataByPath,
   findDataByPathAndQuery,
   replaceObjectInNestedArray,
-  arrayOfPaths
+  arrayOfPaths,
+  deleteObjectInNestedArray,
 } = require("./utils");
 
 /**
@@ -60,7 +61,7 @@ const handleGet = (req, res, dbData, queryParameters) => {
  * @param {string} config.dbFilePath - The file path to the JSON database.
  * @returns {void}
  */
-const handlePost = (req, res, data, config) => {
+const handlePost = (req, res, config) => {
   /**
    * Represents the request body data as a string.
    * @type {string}
@@ -88,9 +89,12 @@ const handlePost = (req, res, data, config) => {
       const dbData = loadJsonData(config.dbFilePath);
       const pathsAsArray = arrayOfPaths(path);
 
-      // let dbDataOfPath = findDataByPathAndQuery(dbData, path);
-
-      const updatedDbData = replaceObjectInNestedArray(dbData, pathsAsArray, queryParameters, postData);
+      const updatedDbData = replaceObjectInNestedArray(
+        dbData,
+        pathsAsArray,
+        queryParameters,
+        postData
+      );
 
       // Save the updated data back to the JSON file
       saveJsonData(config.dbFilePath, updatedDbData);
@@ -107,33 +111,60 @@ const handlePost = (req, res, data, config) => {
   });
 };
 
-const handleDelete = (req, res, data, config) => {
-  // Parse the request URL to extract the path
-  const reqUrl = url.parse(req.url, true);
-  const path = reqUrl.pathname;
+const handleDelete = (req, res, config) => {
+  try {
+    // Parse the request URL to extract the path and query parameters
+    const reqUrl = url.parse(req.url, true);
+    const path = reqUrl.pathname;
 
-  // Load the JSON data from db.json
-  let dbData = loadJsonData(config.dbFilePath);
+    const queryParameters = reqUrl.query;
 
-  // Find the corresponding data based on the request path
-  const requestData = findDataByPath(dbData, path);
+    const keys = Object.keys(queryParameters);
+    if (keys?.length > 0) {
+      // Load the JSON data from db.json
+      const dbData = loadJsonData(config.dbFilePath);
+      const pathsAsArray = arrayOfPaths(path);
 
-  if (!requestData) {
-    res.statusCode = 404;
-    res.end("Not Found");
-    return;
+      const updatedDbData = deleteObjectInNestedArray(
+        dbData,
+        pathsAsArray,
+        queryParameters
+      );
+
+      // Save the updated data back to the JSON file
+      saveJsonData(config.dbFilePath, updatedDbData);
+    } else {
+      // Parse the request URL to extract the path
+      const reqUrl = url.parse(req.url, true);
+      const path = reqUrl.pathname;
+
+      // Load the JSON data from db.json
+      let dbData = loadJsonData(config.dbFilePath);
+
+      // Find the corresponding data based on the request path
+      const requestData = findDataByPath(dbData, path);
+
+      if (!requestData) {
+        res.statusCode = 404;
+        res.end("Not Found");
+        return;
+      }
+
+      // Remove the data based on the request path
+      deleteDataByPath(dbData, path);
+      // Save the updated data back to the JSON file
+      saveJsonData(config.dbFilePath, dbData);
+    }
+
+    // Respond with updated data
+    res.statusCode = 200;
+    res.setHeader("Content-Type", "application/json");
+    res.end("Data deleted successfully!");
+  } catch (error) {
+    // If there's an error parsing the request body or updating the data, send a 400 Bad Request response
+    res.statusCode = 400;
+    res.end("Bad Request");
   }
-
-  // Remove the data based on the request path
-  deleteDataByPath(dbData, path);
-
-  // Save the updated data back to the JSON file
-  saveJsonData(config.dbFilePath, dbData);
-
-  // Respond with a success message
-  res.statusCode = 200;
-  res.setHeader("Content-Type", "text/plain");
-  res.end("Data deleted successfully.");
 };
 
 /**
@@ -169,18 +200,16 @@ const handleRequest = (req, res, config) => {
   // Load the JSON data from db.json
   const dbData = loadJsonData(config.dbFilePath);
 
-  let matchedData;
-
   // Route the request based on the HTTP method
   switch (method) {
     case "GET":
       handleGet(req, res, dbData, queryParameters);
       break;
     case "POST":
-      handlePost(req, res, matchedData, config);
+      handlePost(req, res, config);
       break;
     case "DELETE":
-      handleDelete(req, res, matchedData, config), query;
+      handleDelete(req, res, config);
       break;
     default:
       // If the method is not allowed, send a 405 Method Not Allowed response

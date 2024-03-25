@@ -141,18 +141,7 @@ const findDataByPathAndQuery = (data, path, queryParameters) => {
     });
     return requestData;
   }
-  return requestData
-};
-
-
-// Custom matching function based on query parameters
-const matchByQueryParams = (item, queryParams) => {
-  for (let key in queryParams) {
-    if (item[key] !== queryParams[key]) {
-      return false;
-    }
-  }
-  return true;
+  return requestData;
 };
 
 /**
@@ -164,7 +153,12 @@ const matchByQueryParams = (item, queryParams) => {
  * @param {Object} newObject - The new object to replace or append.
  * @returns {Object} The updated JSON object after the replacement or addition.
  */
-const replaceObjectInNestedArray = (jsonObject, arrayKeys, queryParams, newObject) => {
+const replaceObjectInNestedArray = (
+  jsonObject,
+  arrayKeys,
+  queryParams,
+  newObject
+) => {
   // Helper function to traverse the JSON object recursively and find the target array
   const findTargetArray = (obj, keys) => {
     if (keys.length === 0) {
@@ -172,7 +166,7 @@ const replaceObjectInNestedArray = (jsonObject, arrayKeys, queryParams, newObjec
     }
     const currentKey = keys[0];
     const remainingKeys = keys.slice(1);
-    if (!obj || typeof obj !== 'object' || !obj.hasOwnProperty(currentKey)) {
+    if (!obj || typeof obj !== "object" || !obj.hasOwnProperty(currentKey)) {
       return null;
     }
     return findTargetArray(obj[currentKey], remainingKeys);
@@ -205,7 +199,7 @@ const replaceObjectInNestedArray = (jsonObject, arrayKeys, queryParams, newObjec
   }
 
   // Find the index of the object to replace based on queryParams
-  const index = targetArray.findIndex(item => {
+  const index = targetArray.findIndex((item) => {
     for (let key in queryParams) {
       if (item[key] !== queryParams[key]) {
         return false;
@@ -226,6 +220,51 @@ const replaceObjectInNestedArray = (jsonObject, arrayKeys, queryParams, newObjec
 };
 
 /**
+ * Deletes an object from an array within a JSON structure based on the query parameters.
+ * @param {Object} jsonObject - The JSON object containing the nested arrays.
+ * @param {Array<string>} arrayKeys - The array representing the path to the nested array within the JSON structure.
+ * @param {Object} queryParams - The query parameters used for matching.
+ * @returns {Object} The updated JSON object after the deletion.
+ */
+const deleteObjectInNestedArray = (jsonObject, arrayKeys, queryParams) => {
+  // Helper function to traverse the JSON object recursively and find the target array
+  const findTargetArray = (obj, keys) => {
+    if (keys.length === 0) {
+      return obj;
+    }
+    const currentKey = keys[0];
+    const remainingKeys = keys.slice(1);
+    if (!obj || typeof obj !== "object" || !obj.hasOwnProperty(currentKey)) {
+      return null;
+    }
+    return findTargetArray(obj[currentKey], remainingKeys);
+  };
+
+  // Find the target array using arrayKeys
+  const targetArray = findTargetArray(jsonObject, arrayKeys);
+  if (!targetArray || !Array.isArray(targetArray)) {
+    return jsonObject; // Return the original object if the target array is not found or is not an array
+  }
+
+  // Find the index of the object to delete based on queryParams
+  const index = targetArray.findIndex((item) => {
+    for (let key in queryParams) {
+      if (item[key] != queryParams[key]) {
+        return false;
+      }
+    }
+    return true;
+  });
+
+  if (index !== -1) {
+    // If the object matching query parameters exists, remove it from the array
+    targetArray.splice(index, 1);
+  }
+
+  return jsonObject; // Return the updated JSON object
+};
+
+/**
  * Splits a path string by "/" and filters out empty parts.
  * @param {string} path - The path string to split.
  * @returns {Array<string>} An array containing non-empty parts of the path.
@@ -239,5 +278,6 @@ module.exports = {
   deleteDataByPath,
   findDataByPathAndQuery,
   replaceObjectInNestedArray,
-  arrayOfPaths
+  arrayOfPaths,
+  deleteObjectInNestedArray,
 };
