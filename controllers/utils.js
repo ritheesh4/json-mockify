@@ -129,19 +129,23 @@ const findDataByPathAndQuery = (data, path, queryParameters) => {
   }
 
   // Filter data based on query parameters
-  const keys = Object.keys(queryParameters);
-  if (keys?.length > 0) {
-    requestData = requestData?.filter((item) => {
-      for (const key of keys) {
-        if (item[key] == queryParameters[key]) {
-          return true;
+  try {
+    const keys = Object.keys(queryParameters);
+    if (keys?.length > 0) {
+      requestData = requestData?.filter((item) => {
+        for (const key of keys) {
+          if (item[key] == queryParameters[key]) {
+            return true;
+          }
         }
-      }
-      return false;
-    });
+        return false;
+      });
+      return requestData;
+    }
     return requestData;
+  } catch (error) {
+    return null;
   }
-  return requestData;
 };
 
 /**
