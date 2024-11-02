@@ -1,6 +1,6 @@
 {
   "name": "json-mockify",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "A simple CRUD HTTP server for JSON files",
   "main": "index.js",
   "scripts": {
